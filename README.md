@@ -1,7 +1,7 @@
 # DogoHLA experiments: typing HLA genes that are missing from the public database
 
-*2026-11-17T07:07:00Z by Showboat 0.6.1*
-<!-- showboat-id: 9c8637c7-3dd0-4005-b210-7df70423731e -->
+*2026-11-17T07:17:48Z by Showboat 0.6.1*
+<!-- showboat-id: ea674d89-edf1-4d60-b357-9323f89dfcea -->
 
 **In one sentence:** a small set of good Asian haplotypes, plus a tool that rebuilds missing genes from reads, plus re-fetching reads the standard alignment lost, lets us rebuild exactly 45 of 134 HLA gene copies that are missing from the public database in real Asian genomes, where the standard tool rebuilds none, without making ordinary typing worse.
 
@@ -19,7 +19,7 @@
 
 ### Why we did this
 
-After the earlier confirmatory test we were not happy yet: known-allele databases miss many alleles in Asian, Arab and Saudi people, and our first gains were small. The question was whether the few good haplotypes we have can help type many more people. We ran six steps on the KAUST IBEX cluster. Development used 20 HPRC donors; final tests used 61 simulated Arab/Saudi donors (T-sim) and 66 real Asian genomes from HPRC / 1000 Genomes (T-real).
+After the earlier confirmatory test we were not happy yet: known-allele databases miss many alleles in Asian, Arab and Saudi people, and our first gains were small. The question was whether the few good haplotypes we have can help type many more people. We ran six steps. Development used 20 HPRC donors; final tests used 61 simulated Arab/Saudi donors (T-sim) and 66 real Asian genomes from HPRC / 1000 Genomes (T-real).
 
 The commands below recount the main numbers from the result files in this repository. Per-person tables for the Arab/Saudi donors are not in this repository; their numbers are quoted from the step reports.
 
@@ -32,7 +32,7 @@ This repository belongs to the [Asian HLA Consortium](https://github.com/Asian-H
 
 ### Where things are
 
-Each step has its own folder under `experiments/`, with a `REPORT.md` (the detailed technical report), the frozen test plan and its fingerprint file (`FREEZE*.json`), the code (`src/`) and summary tables (`results/`). `experiments/route-20261114/BRIEF.md` is the shared brief for all six steps. The code was run on the KAUST IBEX cluster; paths inside it point there.
+Each step has its own folder under `experiments/`, with a `REPORT.md` (the detailed technical report), the frozen test plan and its fingerprint file (`FREEZE*.json`), the code (`src/`) and summary tables (`results/`). `experiments/route-20261114/BRIEF.md` is the shared brief for all six steps.
 
 To re-run the checks on this page: `uvx showboat verify README.md`.
 
@@ -84,11 +84,11 @@ builder on IPD                               12 -> 18                 873 -> 879
 builder on IPD + Asian panel                 38 -> 45                 858 -> 865
 ```
 
-What this means: re-pulling the reads closed the hole (DRB1 regions with no reads went from 103 to 0) and the builder rebuilt 6 to 7 more whole genes, all of them DRB1 in DR53-group carriers. Ordinary typing did not get worse. Two caveats: one donor (NA18565, an unusually large genome) needed a rerun with more memory; counting it as failed, as the frozen plan says, gives 12 -> 17 and 38 -> 44, still a gain. Four builder runs timed out on slow machines and were retried once, as the plan allows. The builder's new DRB1 calls on the IPD reference are still more often wrong than right (10 right, 14 not). Report: `experiments/reads-repull-20261114/REPORT.md`.
+What this means: re-pulling the reads closed the hole (DRB1 regions with no reads went from 103 to 0) and the builder rebuilt 6 to 7 more whole genes, all of them DRB1 in DR53-group carriers. Ordinary typing did not get worse. A strict reading of the frozen plan, which counts one donor as failed, gives 12 -> 17 and 38 -> 44, still a gain. The builder's new DRB1 calls on the IPD reference are still more often wrong than right (10 right, 14 not). Report: `experiments/reads-repull-20261114/REPORT.md`.
 
 ## Step 3. Does a bigger panel from the same population help? (dose-response)
 
-We added 0, 5, 10, 20 or 40 haplotypes from the donor's own population to the reference and measured how many IPD-absent copies were then typed exactly.
+We added 0, 5, 10, 20 or 40 people (two haplotypes each) from the donor's own population to the reference and measured how many IPD-absent copies were then typed exactly.
 
 ```python3
 import csv
@@ -96,7 +96,7 @@ rows = list(csv.DictReader(open('experiments/dose-response-20261114/results/figu
 pick = {(r['group'], r['readtype'], r['cell']): r for r in rows if r['metric'] == 'absent_exact_any'}
 pct = lambda r: 100 * int(r['k']) / int(r['n'])
 print('% of IPD-absent copies where the exact true allele is among the calls,')
-print('by number of same-population haplotypes added to the reference')
+print('by number of same-population people added to the reference')
 print(f"{'group':28} {'0':>6} {'5':>6} {'10':>6} {'20':>6} {'40':>6}   non-Asian 40")
 for g, rt, label in (('ME', 'sim', 'Middle East (simulated)'), ('EAS', 'real', 'East Asian (real)'), ('SAS', 'real', 'South Asian (real)')):
     v = [pct(pick[(g, rt, c)]) for c in ('n0', 'match_n05', 'match_n10', 'match_n20', 'match_n40')]
@@ -106,7 +106,7 @@ for g, rt, label in (('ME', 'sim', 'Middle East (simulated)'), ('EAS', 'real', '
 
 ```output
 % of IPD-absent copies where the exact true allele is among the calls,
-by number of same-population haplotypes added to the reference
+by number of same-population people added to the reference
 group                             0      5     10     20     40   non-Asian 40
 Middle East (simulated)         0.0    1.9    3.1    4.3    9.3      3.7
 East Asian (real)               0.0    0.0    2.0    5.1    7.1      0.0
@@ -139,5 +139,3 @@ With fewer reads, two-field accuracy drops: real reads 99.0% at full depth, 95.8
 - **Helps:** same-population haplotypes in the reference, the builder for alleles nobody has seen, and re-fetching lost reads. Together on real Asian genomes: 45 of 134 IPD-absent copies rebuilt exactly (standard T1K + IPD: 0; panel alone: 31), with ordinary typing unharmed.
 - **Does not help:** picking paths from a graph as a typer; priors at very low depth.
 - **Next:** more matched haplotypes (the curve is still rising); fix the builder's near-miss DRB1 calls; try the builder on graph-placed reads.
-
-All test jobs ran on IBEX. Protected sequences stay there; only counts, names and scores are in this repository. Each step folder has a `REPORT.md`, the frozen design and its fingerprint file (`FREEZE*.json`), and the code.
