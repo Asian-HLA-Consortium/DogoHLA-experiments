@@ -1,0 +1,19 @@
+{
+ "gene": "C",
+ "source_tag": "learn",
+ "source_readsets": "D-sim",
+ "arm": "C",
+ "donors_used": 17,
+ "missing": 0,
+ "n_raw": 4,
+ "windows": [
+  [
+   3339,
+   3400
+  ],
+  [
+   4648,
+   4678
+  ]
+ ]
+}

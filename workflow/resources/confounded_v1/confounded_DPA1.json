@@ -1,0 +1,23 @@
+{
+ "gene": "DPA1",
+ "source_tag": "learn",
+ "source_readsets": "D-sim",
+ "arm": "C",
+ "donors_used": 8,
+ "missing": 0,
+ "n_raw": 5,
+ "windows": [
+  [
+   121,
+   151
+  ],
+  [
+   1244,
+   1289
+  ],
+  [
+   5379,
+   5427
+  ]
+ ]
+}

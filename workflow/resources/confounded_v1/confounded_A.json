@@ -1,0 +1,10 @@
+{
+ "gene": "A",
+ "source_tag": "learn",
+ "source_readsets": "D-sim",
+ "arm": "C",
+ "donors_used": 15,
+ "missing": 0,
+ "n_raw": 0,
+ "windows": []
+}

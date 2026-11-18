@@ -1,0 +1,10 @@
+{
+ "gene": "DQA1",
+ "source_tag": "learn",
+ "source_readsets": "D-sim",
+ "arm": "C",
+ "donors_used": 16,
+ "missing": 0,
+ "n_raw": 0,
+ "windows": []
+}
