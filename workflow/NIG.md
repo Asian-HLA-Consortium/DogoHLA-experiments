@@ -14,6 +14,10 @@ NIG compute nodes support Singularity containers.
 # Pull published workflow container from GHCR
 singularity pull docker://ghcr.io/asian-hla-consortium/dogohla-workflow:latest
 ```
+If `singularity exec` on the pulled image fails with "bad superblock for squashfs", pull it again with the
+temporary build folder on an ordinary filesystem (for example your home directory), not on an encrypted or
+ACL-managed one: `export SINGULARITY_TMPDIR=$HOME/sif-tmp SINGULARITY_CACHEDIR=$HOME/sif-cache` (or the
+`APPTAINER_` equivalents) before `singularity pull`.
 
 ### Option B: Native Environment via Micromamba
 If running uncontainerized (`--no-container`), create the environment using:

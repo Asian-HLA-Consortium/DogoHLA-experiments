@@ -14,7 +14,7 @@ requirements:
 
 hints:
   DockerRequirement:
-    dockerPull: dogohla/workflow:1.0.0
+    dockerPull: ghcr.io/asian-hla-consortium/dogohla-workflow:latest
 
 inputs:
   script:
