@@ -11,13 +11,17 @@ The workflow is portable and contains zero hardcoded cluster paths. It can be ru
 ### Option A: Singularity / Apptainer (Recommended)
 NIG compute nodes support Singularity containers.
 ```bash
-# Pull published workflow container from GHCR
-singularity pull docker://ghcr.io/asian-hla-consortium/dogohla-workflow:latest
+# Pull the published workflow container from GHCR into the folder where cwltool looks for it.
+# Temporary and cache folders must be on an ordinary filesystem (for example your home directory),
+# not on an encrypted or ACL-managed one; otherwise `singularity exec` can fail with
+# "bad superblock for squashfs".
+export SINGULARITY_TMPDIR=$HOME/sif-tmp SINGULARITY_CACHEDIR=$HOME/sif-cache CWL_SINGULARITY_CACHE=$HOME/sif-images
+mkdir -p $SINGULARITY_TMPDIR $SINGULARITY_CACHEDIR $CWL_SINGULARITY_CACHE
+singularity pull --name $CWL_SINGULARITY_CACHE/ghcr.io_asian-hla-consortium_dogohla-workflow:latest.sif docker://ghcr.io/asian-hla-consortium/dogohla-workflow:latest
 ```
-If `singularity exec` on the pulled image fails with "bad superblock for squashfs", pull it again with the
-temporary build folder on an ordinary filesystem (for example your home directory), not on an encrypted or
-ACL-managed one: `export SINGULARITY_TMPDIR=$HOME/sif-tmp SINGULARITY_CACHEDIR=$HOME/sif-cache` (or the
-`APPTAINER_` equivalents) before `singularity pull`.
+`cwltool --singularity` finds the image by this file name in `CWL_SINGULARITY_CACHE`. Without it, cwltool
+pulls the image itself (about 10 minutes, no message) with default temporary folders. Use the `APPTAINER_`
+variables if you run Apptainer.
 
 ### Option B: Native Environment via Micromamba
 If running uncontainerized (`--no-container`), create the environment using:
@@ -31,16 +35,21 @@ micromamba create -n dogohla -c conda-forge -c bioconda \
 
 ## 2. Resource Preparation on NIG Storage
 
-Download the public reference resources using the staged helper script:
+Download and build the public reference resources with the helper script, inside the image:
 ```bash
-bash scripts/fetch_resources.sh
+singularity exec $CWL_SINGULARITY_CACHE/ghcr.io_asian-hla-consortium_dogohla-workflow:latest.sif bash scripts/fetch_resources.sh resources
 ```
-This fetches:
-- `genomic.fa`: IPD-IMGT/HLA 3.65.0 genomic alleles.
-- `bait_kmers.txt`: MHC 31-mer bait dictionary (`sha256: 50b3b7324a5f5bca...`).
-- `Data-ipd3590-kir2130`: Immuannot reference models.
+This stages, each checked by sha256:
+- `resources/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa` and its `.fai`: GRCh38 reference with decoys and HLA contigs.
+- `resources/ipd/genomic.fa`: IPD-IMGT/HLA 3.65.0 genomic alleles (checked, not built: place the pinned file supplied by the consortium there first).
+- `resources/bait/bait_kmers.txt`: MHC 31-mer bait dictionary (`sha256: 50b3b7324a5f5bca...`).
+- `resources/immuannot/Data-ipd3590-kir2130`: Immuannot reference data.
 
-Place your local Japanese WGS CRAMs/BAMs and phased assemblies in your project directory (e.g. `/home/hdaanaa/hla/data/`). Note that Japanese donor data must not leave NIG.
+Each CRAM or BAM needs its index next to it (`samtools index sample.cram` gives `sample.cram.crai`); the
+workflow stops at the start if it is missing. The builder also needs the cohort resource folder
+(`builder_inputs`) that the consortium supplies.
+
+Place your local Japanese WGS CRAMs/BAMs and phased assemblies in your project directory (e.g. `/path/to/data/`). Note that Japanese donor data must not leave NIG.
 
 ---
 
@@ -64,8 +73,9 @@ Create the submission script tailored to NIG's Slurm configuration:
 set -euo pipefail
 
 # Environment setup
-export TMPDIR=${SLURM_TMPDIR:-/tmp}
-export SINGULARITY_CACHEDIR=$HOME/.singularity/cache
+export TMPDIR=${SLURM_TMPDIR:-$HOME/tmp}
+mkdir -p "$TMPDIR"
+export SINGULARITY_CACHEDIR=$HOME/sif-cache SINGULARITY_TMPDIR=$HOME/sif-tmp CWL_SINGULARITY_CACHE=$HOME/sif-images
 
 SAMPLE_ID="SAMPLE_JPT01"
 WORKFLOW_DIR="$HOME/dogohla/workflow"
@@ -91,6 +101,8 @@ toil-cwl-runner \
   --outdir "$OUTDIR" \
   "$WORKFLOW_DIR/type.cwl" "$INPUTS"
 
+# Score the sample afterwards with evaluate.cwl (see the README)
+
 echo "Completed DogoHLA workflow at $(date)"
 ```
 
@@ -98,26 +110,36 @@ echo "Completed DogoHLA workflow at $(date)"
 
 ## 4. Input Configuration YAML
 
-Example `SAMPLE_JPT01_inputs.yml`:
+Example `SAMPLE_JPT01_inputs.yml` (the CRAM index `.crai` and the reference `.fai` are found next to their files):
 ```yaml
-sample_id: "SAMPLE_JPT01"
-cram_or_bam:
+donor: "SAMPLE_JPT01"
+cram:
   class: File
   path: "/path/to/nig/data/SAMPLE_JPT01.cram"
 reference_genome:
   class: File
-  path: "/path/to/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+  path: "/path/to/resources/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa"
 ipd_genomic:
   class: File
   path: "/path/to/resources/ipd/genomic.fa"
 bait_kmers:
   class: File
   path: "/path/to/resources/bait/bait_kmers.txt"
+panel_reference:
+  class: File
+  path: "/path/to/panel/reference.fa"
+panel_aliases:
+  class: File
+  path: "/path/to/panel/aliases.json"
+builder_inputs:
+  class: Directory
+  path: "/path/to/cohort_resource"
 confounded_dir:
   class: Directory
   path: "/path/to/workflow/resources/confounded_v1"
 threads: 16
 ```
+Leave out `panel_reference` and `panel_aliases` to run arm A only.
 
 ---
 

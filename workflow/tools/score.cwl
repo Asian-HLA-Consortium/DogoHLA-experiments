@@ -1,16 +1,17 @@
 cwlVersion: v1.2
 class: CommandLineTool
-label: Score HLA calls against truth sequences
+label: Score the typing arms of one donor with the frozen scorer
 doc: |
-  Scores final genotype calls against truth sequences from extract-genes.
-  Calculates gene-body recovery of IPD-absent copies, 4-field named accuracy,
-  and family-clustered bootstrap confidence intervals.
+  Runs the frozen all-gene scorer on one donor and writes one row per truth copy and arm
+  (all columns of the frozen scorer) for the arms A, B (T1K tables), C4, C4R4n (builder on the IPD
+  run) and D4, D4R4n (builder on the panel run). Arms B, D4 and D4R4n need the panel inputs.
+  The script is a thin wrapper around the vendored frozen code in dogohla/frozen.
 
 requirements:
   InlineJavascriptRequirement: {}
   ResourceRequirement:
     coresMin: 2
-    ramMin: 4000
+    ramMin: 8000
 
 hints:
   DockerRequirement:
@@ -24,42 +25,81 @@ inputs:
       location: ../scripts/score.py
     inputBinding:
       position: 1
-  calls:
-    type: File[]
+  package:
+    type: Directory
+    default:
+      class: Directory
+      location: ../dogohla
     inputBinding:
-      prefix: --calls
+      prefix: --package-dir
       position: 2
-  truth_records:
-    type: File[]
+  donor:
+    type: string
     inputBinding:
-      prefix: --truth-records
+      prefix: --donor
       position: 3
-  family_table:
+  calls_a:
+    type: File
+    inputBinding:
+      prefix: --calls-a
+      position: 4
+    doc: T1K genotype table on the IPD reference (arm A)
+  calls_b:
     type: File?
     inputBinding:
-      prefix: --family-table
-      position: 4
-  arm:
-    type: string
-    default: "final"
-    inputBinding:
-      prefix: --arm
+      prefix: --calls-b
       position: 5
+    doc: T1K genotype table on the panel reference (arm B)
+  builder_dir_c:
+    type: Directory
+    inputBinding:
+      prefix: --builder-dir-c
+      position: 6
+  builder_dir_d:
+    type: Directory?
+    inputBinding:
+      prefix: --builder-dir-d
+      position: 7
+  panel_reference:
+    type: File?
+    inputBinding:
+      prefix: --panel-reference
+      position: 8
+  ipd_genomic:
+    type: File
+    inputBinding:
+      prefix: --ipd-genomic
+      position: 9
+  builder_inputs:
+    type: Directory
+    inputBinding:
+      prefix: --builder-inputs
+      position: 10
+  params:
+    type: File
+    default:
+      class: File
+      location: ../resources/builder/PARAMS.json
+    inputBinding:
+      prefix: --params
+      position: 11
 
 baseCommand: [python3]
 
 arguments:
   - prefix: --out-rows
     valueFrom: score_rows.tsv
-  - prefix: --out-summary
-    valueFrom: score_summary.json
+    position: 20
+  - prefix: --out-avail
+    valueFrom: score_avail.tsv
+    position: 21
 
 outputs:
   rows_tsv:
     type: File
     outputBinding:
       glob: score_rows.tsv
-  summary_json:
+  avail_tsv:
     type: File
     outputBinding:
-      glob: score_summary.json
+      glob: score_avail.tsv

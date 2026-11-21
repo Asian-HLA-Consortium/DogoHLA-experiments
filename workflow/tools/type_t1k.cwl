@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Run T1K short-read HLA typing
 doc: |
   Runs T1K against the specified linear reference (IPD genomic or augmented panel).
-  Produces calls_genotype.tsv and candidate read alignments.
+  Produces <out_prefix>_genotype.tsv and the candidate reads <out_prefix>_candidate_1.fq / _2.fq.
 
 requirements:
   InlineJavascriptRequirement: {}
@@ -37,6 +37,13 @@ inputs:
     inputBinding:
       prefix: -t
       position: 4
+  out_prefix:
+    type: string
+    default: calls
+    inputBinding:
+      prefix: -o
+      position: 5
+    doc: Prefix of the T1K output files (use a different one per arm, e.g. armA / armB)
 
 baseCommand: [run-t1k]
 
@@ -47,23 +54,21 @@ arguments:
   - "4"
   - --alleleDelimiter
   - ":"
-  - -o
-  - calls
 
 outputs:
   genotype_tsv:
     type: File
     outputBinding:
-      glob: calls_genotype.tsv
+      glob: $(inputs.out_prefix)_genotype.tsv
   allele_tsv:
     type: File?
     outputBinding:
-      glob: calls_allele.tsv
+      glob: $(inputs.out_prefix)_allele.tsv
   candidate_1:
-    type: File?
+    type: File
     outputBinding:
-      glob: calls_candidate_1.fq
+      glob: $(inputs.out_prefix)_candidate_1.fq
   candidate_2:
-    type: File?
+    type: File
     outputBinding:
-      glob: calls_candidate_2.fq
+      glob: $(inputs.out_prefix)_candidate_2.fq

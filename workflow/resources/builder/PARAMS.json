@@ -1,0 +1,21 @@
+{
+  "min_strand": 2,
+  "min_frac": 0.2,
+  "min_reads_frac": 3,
+  "min_depth_contra": 8,
+  "max_contra_reads": 2,
+  "lam": 0.1,
+  "w_link": 0.05,
+  "prior_eps": 1e-06,
+  "min_seg_bp": 150,
+  "min_gain": 1.0,
+  "max_iter": 6,
+  "n_max": 4,
+  "max_read_edit": 6,
+  "max_switches": 3,
+  "max_residual": 3.0,
+  "skip_outside_cds_only": true,
+  "acc_min_strand": 2,
+  "acc_min_frac": 0.2,
+  "acc_max_contra": 1
+}

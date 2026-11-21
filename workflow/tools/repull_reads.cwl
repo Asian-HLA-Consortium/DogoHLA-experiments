@@ -2,8 +2,11 @@ cwlVersion: v1.2
 class: CommandLineTool
 label: Repull HLA reads via MHC regional pull and bait 31-mer matching
 doc: |
-  Rule-2 read set generation: MHC regional pull UNION genome-wide pairs
-  with >= 3 bait 31-mers. Accepts WGS CRAM or paired FASTQ.
+  Rule-2 read set generation: the regional MHC recruitment (region bed over chr6:28.5-33.5 Mb plus every
+  HLA-* and chr6_* contig, with mate rescue) UNION every genome-wide read pair with >= 3 bait 31-mers.
+  Starts from a WGS CRAM/BAM alone. The CRAM index (.crai, or .bai for a BAM) must sit next to the CRAM and
+  the .fai next to the reference FASTA; both are staged as secondary files. Instead of the CRAM, the regional
+  and/or candidate reads made earlier can be given. The recruitment and union are the vendored frozen code.
 
 requirements:
   InlineJavascriptRequirement: {}
@@ -23,11 +26,20 @@ inputs:
       location: ../scripts/repull_reads.py
     inputBinding:
       position: 1
+  package:
+    type: Directory
+    default:
+      class: Directory
+      location: ../dogohla
+    inputBinding:
+      prefix: --package-dir
+      position: 2
+    doc: The workflow package folder (verify.py, frozen/)
   donor:
     type: string
     inputBinding:
       prefix: --donor
-      position: 2
+      position: 5
   bait_kmers:
     type: File
     inputBinding:
@@ -41,11 +53,19 @@ inputs:
       position: 4
   cram:
     type: File?
+    secondaryFiles:
+      - pattern: .crai
+        required: $(self.basename.endsWith('.cram'))
+      - pattern: .bai
+        required: $(self.basename.endsWith('.bam'))
     inputBinding:
       prefix: --cram
       position: 10
   reference_genome:
     type: File?
+    secondaryFiles:
+      - pattern: .fai
+        required: true
     inputBinding:
       prefix: --reference-genome
       position: 11

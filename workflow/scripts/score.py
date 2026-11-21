@@ -1,169 +1,135 @@
 #!/usr/bin/env python3
-"""Part 6: score.
-Evaluates final calls against truth sequences from Part 1.
-Computes:
-- Exact sequence recovery of IPD-absent copies (gene-body match, byte-exact match)
-- Four-field, three-field, and two-field named accuracy on IPD-present copies
-- Novel calls right vs wrong
-- Family-clustered bootstrap uncertainty (4,000 bootstrap draws)
-Outputs score_rows.tsv and summary metrics.
+"""Part 6: score (thin wrapper around the frozen scorer).
+
+Runs the frozen all-gene scorer (dogohla/frozen/mosaic-allgenes-20261114/ag_score.py on top of the frozen
+mosaic-typer-20261113/score.py) for one donor, exactly as the accepted equivalence wrapper did, and writes the
+rows it produces: one row per truth copy and arm, all columns of the frozen scorer, for the arms
+  A, B      the T1K tables of the IPD run and the panel run,
+  C4, C4R4n builder on the IPD run, without / with the R4n abstain rule,
+  D4, D4R4n builder on the panel run, without / with the R4n abstain rule.
+Arms B, D4 and D4R4n are scored only when the panel run is given.
+No scoring logic is written here; this file only lays the inputs out in the folder structure the
+frozen code reads (a copy of the builder folders, with the path of the pass-1 run in their per-gene
+COMPLETE.json relocated to this job's folder).
 """
 from __future__ import annotations
 
 import argparse
-import collections
-import csv
 import hashlib
+import importlib.util
 import json
-import random
+import shutil
 import sys
 from pathlib import Path
 
-GENES = ('A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1')
+READSET = 'D-real3'
 
 
-def sha(s: str) -> str:
-    return hashlib.sha256(s.encode()).hexdigest()
+def sha256_file(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as f:
+        for c in iter(lambda: f.read(1 << 22), b''):
+            h.update(c)
+    return h.hexdigest()
 
 
-def uncertainty(pairs: list[dict], group_of: dict):
-    """Component-clustered bootstrap (4000 draws, seed 20261020)."""
-    clusters = collections.defaultdict(list)
-    for r in pairs:
-        clusters[group_of.get(r['donor'], (r['donor'],))].append(r['difference'])
-    values = [(sum(v), len(v)) for v in clusters.values()]
-    if not values:
-        return {'family_clusters': 0, 'difference_pp': None, 'bootstrap95_pp': None}
-    rng = random.Random(20261020)
-    boots = []
-    for _ in range(4000):
-        draw = [rng.choice(values) for _ in values]
-        boots.append(100.0 * sum(x[0] for x in draw) / sum(x[1] for x in draw))
-    boots.sort()
-    diff = 100.0 * sum(x[0] for x in values) / sum(x[1] for x in values)
-    ci = (round(boots[100], 2), round(boots[3900], 2))
-    return {
-        'family_clusters': len(values),
-        'difference_pp': round(diff, 2),
-        'bootstrap95_pp': list(ci)
-    }
+def stage_run(run_dir: Path, table: Path, donor: str, arm_letter: str, ref: Path | None):
+    """pass-1 T1K run folder in the layout the frozen code reads."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    dst = run_dir / 'calls_genotype.tsv'
+    if dst.is_symlink() or dst.exists():
+        dst.unlink()
+    dst.symlink_to(table.resolve())
+    rec = {'status': 'complete', 'donor': donor, 'readset': READSET, 'arm': arm_letter, 'truth_loaded': False,
+           'native_table_sha256': sha256_file(dst)}
+    if ref is not None:
+        rec['reference_sha256'] = sha256_file(ref)
+    (run_dir / 'COMPLETE.json').write_text(json.dumps(rec, indent=2))
 
 
-def parse_calls(calls_tsv: Path) -> dict[str, list[list[str]]]:
-    """{gene: [slot1_alleles, slot2_alleles]}"""
-    out = {}
-    with open(calls_tsv) as f:
-        reader = csv.reader(f, delimiter='\t')
-        header = next(reader, None)
-        for row in reader:
-            if not row or len(row) < 3:
-                continue
-            g = row[0].split('*')[0].removeprefix('HLA-')
-            s1 = [x.strip() for x in row[1].split(',') if x.strip() and x.strip() != 'NA']
-            s2 = [x.strip() for x in row[2].split(',') if x.strip() and x.strip() != 'NA']
-            out[g] = [s1, s2]
-    return out
+def stage_builder(src: Path, dst: Path, pass1_run: Path, pass1_ref: Path | None):
+    """copy of a builder output folder; the per-gene COMPLETE.json point at this job's pass-1 run"""
+    shutil.rmtree(dst, ignore_errors=True)
+    shutil.copytree(src, dst)
+    for gc in dst.glob('*/COMPLETE.json'):
+        rec = json.loads(gc.read_text())
+        rec['pass1_run'] = str(pass1_run)
+        rec['pass1_reference'] = str(pass1_ref) if pass1_ref else rec.get('pass1_reference')
+        gc.write_text(json.dumps(rec, indent=2))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--calls', nargs='+', required=True, help='One or more final calls TSVs')
-    ap.add_argument('--truth-records', nargs='+', required=True, help='Truth records JSONs from extract-genes')
-    ap.add_argument('--family-table', help='Optional FOLDS.json for family component clustering')
-    ap.add_argument('--arm', default='final', help='Arm label (e.g. C4R4n or D4R4n)')
-    ap.add_argument('--out-rows', required=True, help='Output score_rows.tsv')
-    ap.add_argument('--out-summary', required=True, help='Output summary JSON')
+    ap.add_argument('--donor', required=True)
+    ap.add_argument('--calls-a', required=True, help='T1K genotype table, IPD run (arm A)')
+    ap.add_argument('--calls-b', help='T1K genotype table, panel run (arm B)')
+    ap.add_argument('--builder-dir-c', required=True, help='patch-builder output folder, IPD arm')
+    ap.add_argument('--builder-dir-d', help='patch-builder output folder, panel arm')
+    ap.add_argument('--panel-reference', help='T1K reference FASTA of the panel run (needed with arm B / D)')
+    ap.add_argument('--ipd-genomic', required=True)
+    ap.add_argument('--builder-inputs', required=True, help='cohort resource folder (SOURCE_RECORDS.json, msa/, ...)')
+    ap.add_argument('--params', required=True, help='frozen builder parameter file PARAMS.json')
+    ap.add_argument('--out-rows', required=True)
+    ap.add_argument('--out-avail', required=True)
+    ap.add_argument('--package-dir', default=str(Path(__file__).resolve().parent.parent / 'dogohla'))
     a = ap.parse_args()
 
-    # Load truth records
-    truth = collections.defaultdict(dict)
-    for tf in a.truth_records:
-        data = json.loads(Path(tf).read_text())
-        recs = data if isinstance(data, list) else data.get('records', [])
-        for r in recs:
-            truth[r['donor']][(r['gene'], str(r['haplotype']))] = r
+    panel = bool(a.calls_b and a.builder_dir_d and a.panel_reference)
+    work = Path('score_work').resolve()
+    work.mkdir(parents=True, exist_ok=True)
 
-    # Load family table if provided
-    group_of = {}
-    if a.family_table and Path(a.family_table).exists():
-        ft = json.loads(Path(a.family_table).read_text())
-        groups = ft.get('groups', {})
-        for gid, members in groups.items():
-            for m in members:
-                group_of[m] = gid
+    spec = importlib.util.spec_from_file_location('dogohla_wrapper_env', str(Path(a.package_dir) / 'wrapper_env.py'))
+    WE = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(WE)
+    C, RD, D2, R, AS = WE.setup(a.package_dir, a.builder_inputs, a.ipd_genomic, a.params, work)
+    import common3 as K      # frozen: K.OLD maps the re-pulled read-set label to the old one
 
-    score_rows = []
-    total_copies = absent_copies = present_copies = 0
-    body_recovered_count = named4_count = 0
+    d = a.donor
+    TYPE_DIR = work / 'type'
+    panel_ref = Path(a.panel_reference).resolve() if a.panel_reference else None
+    stage_run(TYPE_DIR / d / 'A', Path(a.calls_a), d, 'A', None)
+    stage_builder(Path(a.builder_dir_c), TYPE_DIR / d / 'C', TYPE_DIR / d / 'A', None)
+    if panel:
+        stage_run(TYPE_DIR / d / 'B', Path(a.calls_b), d, 'B', panel_ref)
+        stage_builder(Path(a.builder_dir_d), TYPE_DIR / d / 'D', TYPE_DIR / d / 'B', panel_ref)
 
-    for cf in a.calls:
-        cf_path = Path(cf)
-        # Attempt to deduce donor from filename, e.g. <donor>_final_calls.tsv
-        donor = cf_path.stem.split('_')[0]
-        calls = parse_calls(cf_path)
+    # the truth donors of the frozen scorer are the donors with an existing run: only this donor
+    C.readset_runs = lambda: {'D-sim': {d: TYPE_DIR / d}, 'T-sim': {}, 'real': {d: TYPE_DIR / d}}
 
-        for (g, hap), r in sorted(truth.get(donor, {}).items()):
-            total_copies += 1
-            is_absent = len(r.get('genomic_labels', [])) == 0
-            if is_absent:
-                absent_copies += 1
-            else:
-                present_copies += 1
+    class Truth3(AS.SC.Truth):
+        def __init__(self, rsl):
+            base = sorted({K.OLD.get(r, r) for r in rsl})
+            super().__init__(base)
+            for (r0, dd, g), cps in list(self.copies.items()):
+                for r in rsl:
+                    if K.OLD.get(r) == r0:
+                        self.copies[(r, dd, g)] = [dict(c, readset=r) for c in cps]
+            for k in [k for k in self.copies if k[0] not in rsl]:
+                del self.copies[k]
 
-            # Match final calls
-            called_slots = calls.get(g, [[], []])
-            slot_idx = 0 if hap in ('1', 'haplotype1') else 1
-            call_slot = called_slots[slot_idx] if slot_idx < len(called_slots) else []
-            call_str = ','.join(call_slot) if call_slot else 'NO_CALL'
+    def custom_arm_table(rs, dd, arm):
+        run = TYPE_DIR / dd / arm
+        if arm == 'A':
+            return C.verified_table(run), []
+        return C.verified_table(run), [panel_ref]
 
-            # Evaluate match
-            exact_body = False
-            named4 = False
-            if is_absent:
-                # Check if called allele body matches truth core
-                if any(r['core_sha256'][:12] in c for c in call_slot):
-                    exact_body = True
-                    body_recovered_count += 1
-            else:
-                # Check if called allele matches truth 4-field label
-                labels = r.get('genomic_labels', [])
-                if any(lbl in call_slot or f"HLA-{lbl}" in call_slot for lbl in labels):
-                    named4 = True
-                    named4_count += 1
+    def custom_task_dir(tag_, rs, dd, arm):
+        return TYPE_DIR / dd / arm[0]
 
-            score_rows.append({
-                'donor': donor,
-                'gene': g,
-                'haplotype': hap,
-                'arm': a.arm,
-                'ipd_absent': str(is_absent),
-                'body_recovered': str(exact_body),
-                'named4': str(named4),
-                'call': call_str,
-                'core_sha256': r['core_sha256']
-            })
+    AS.SC.Truth = Truth3
+    AS.SC.arm_table = custom_arm_table
+    AS.task_dir = custom_task_dir
+    AS.TEST = ()
+    AS.S2 = work / 'eq'
+    (AS.S2 / 'results').mkdir(parents=True, exist_ok=True)
 
-    out_rows = Path(a.out_rows)
-    out_rows.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_rows, 'w', newline='') as f:
-        cols = ['donor', 'gene', 'haplotype', 'arm', 'ipd_absent', 'body_recovered', 'named4', 'call', 'core_sha256']
-        writer = csv.DictWriter(f, fieldnames=cols, delimiter='\t')
-        writer.writeheader()
-        for row in score_rows:
-            writer.writerow(row)
+    arms = 'A,B,C4,C4R4n,D4,D4R4n' if panel else 'A,C4,C4R4n'
+    sys.argv = ['ag_score.py', 'dry', READSET, arms]
+    AS.main()
 
-    summary = {
-        'total_copies': total_copies,
-        'absent_copies': absent_copies,
-        'present_copies': present_copies,
-        'body_recovered_count': body_recovered_count,
-        'named4_count': named4_count,
-        'body_recovery_pct': round(100.0 * body_recovered_count / absent_copies, 2) if absent_copies else None,
-        'named4_accuracy_pct': round(100.0 * named4_count / present_copies, 2) if present_copies else None,
-    }
-    Path(a.out_summary).parent.mkdir(parents=True, exist_ok=True)
-    Path(a.out_summary).write_text(json.dumps(summary, indent=2) + '\n')
-    print(f"Scored {total_copies} copies: {body_recovered_count}/{absent_copies} IPD-absent recovered, {named4_count}/{present_copies} named4.")
+    shutil.copy(AS.S2 / 'results/score_rows_dry.tsv', a.out_rows)
+    shutil.copy(AS.S2 / 'results/score_avail_dry.tsv', a.out_avail)
+    print(f'Score rows written to {a.out_rows} (arms {arms})')
 
 
 if __name__ == '__main__':
