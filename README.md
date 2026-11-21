@@ -13,7 +13,7 @@
 - **Whole gene rebuilt**: our final call has exactly the true sequence of the gene.
 - **Four-field name**: the full allele name, down to differences outside the protein-coding part.
 - **T1K**: the standard HLA typing tool we start from.
-- **Panel**: extra Asian haplotypes from long-read genome assemblies, added to IPD as reference.
+- **Panel**: extra haplotypes from long-read genome assemblies, added to IPD as reference. In the tests below the panel holds HPRC Asian haplotypes (the tested donor's family left out) plus Arab and Saudi haplotypes; more than half of its added alleles occur only in the Arab and Saudi genomes, which are not public.
 - **Builder**: our tool that patches a new allele together from the reads when nothing in the reference fits.
 - **Frozen test**: the code, donors and pass/fail rules were fixed and fingerprinted before we looked at any test result.
 
@@ -63,7 +63,7 @@ Recount from the per-copy table (old reads vs re-pulled reads, 134 IPD-absent co
 import csv
 rows = list(csv.DictReader(open('experiments/reads-repull-20261114/results/score_rows_test3.tsv'), delimiter='\t'))
 yes = lambda x: x == 'True'
-names = {'A': 'T1K + IPD', 'B': 'T1K + IPD + Asian panel', 'C4R4n': 'builder on IPD', 'D4R4n': 'builder on IPD + Asian panel'}
+names = {'A': 'T1K + IPD', 'B': 'T1K + IPD + panel', 'C4R4n': 'builder on IPD', 'D4R4n': 'builder on IPD + panel'}
 print(f"{'setup':32} {'whole genes rebuilt (of 134)':>30} {'four-field right':>18}")
 for arm, label in names.items():
     out = []
@@ -79,12 +79,14 @@ for arm, label in names.items():
 ```output
 setup                              whole genes rebuilt (of 134)   four-field right
 T1K + IPD                                     0 -> 0                  861 -> 868
-T1K + IPD + Asian panel                      31 -> 31                 844 -> 852
+T1K + IPD + panel                            31 -> 31                 844 -> 852
 builder on IPD                               12 -> 18                 873 -> 879
-builder on IPD + Asian panel                 38 -> 45                 858 -> 865
+builder on IPD + panel                       38 -> 45                 858 -> 865
 ```
 
 What this means: re-pulling the reads closed the hole (DRB1 regions with no reads went from 103 to 0) and the builder rebuilt 6 to 7 more whole genes, all of them DRB1 in DR53-group carriers. Ordinary typing did not get worse. A strict reading of the frozen plan, which counts one donor as failed, gives 12 -> 17 and 38 -> 44, still a gain. The builder's new DRB1 calls on the IPD reference are still more often wrong than right (10 right, 14 not). Report: `experiments/reads-repull-20261114/REPORT.md`.
+
+With a public-only panel (HPRC Asian haplotypes only, no Arab or Saudi alleles), the builder rebuilds 40 of the 134 whole genes instead of 45, and names known alleles slightly better (876 instead of 865 right). Report: `experiments/public-panel-20261121/REPORT.md`.
 
 ## Step 3. Does a bigger panel from the same population help? (dose-response)
 
@@ -136,6 +138,6 @@ With fewer reads, two-field accuracy drops: real reads 99.0% at full depth, 95.8
 
 ## Bottom line
 
-- **Helps:** same-population haplotypes in the reference, the builder for alleles nobody has seen, and re-fetching lost reads. Together on real Asian genomes: 45 of 134 IPD-absent copies rebuilt exactly (standard T1K + IPD: 0; panel alone: 31), with ordinary typing unharmed.
+- **Helps:** same-population haplotypes in the reference, the builder for alleles nobody has seen, and re-fetching lost reads. Together on real Asian genomes: 45 of 134 IPD-absent copies rebuilt exactly (standard T1K + IPD: 0; panel alone: 31), with ordinary typing unharmed. With a public-only panel: 40 of 134.
 - **Does not help:** picking paths from a graph as a typer; priors at very low depth.
 - **Next:** more matched haplotypes (the curve is still rising); fix the builder's near-miss DRB1 calls; try the builder on graph-placed reads.
