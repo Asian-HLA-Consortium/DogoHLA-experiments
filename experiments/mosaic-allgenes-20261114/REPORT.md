@@ -7,7 +7,7 @@ part are the item-1 hang probes (frozen builder, unscored).
 
 ## Summary (development)
 
-* Hang: not in the code. The frozen builder finishes T-sim APR051 arm D in 7-18 s in 6 repeats (3 hash seeds, the
+* Hang: not in the code. The frozen builder finishes T-sim [Arab/Saudi donor] arm D in 7-18 s in 6 repeats (3 hash seeds, the
   same node cn605-04-l) with the same output hash. The hung job stalled on Lustre file reads; I reproduced the same
   stall live (one task sat 16 min in `cl_sync_io_wait` reading `genomic.fa`, then finished). Fix: wall-clock limits
   per stage and per gene plus deterministic work caps, each with an explicit FAILURE record and a pass-1 fallback.
@@ -28,10 +28,10 @@ times each step, dumps Python stacks every 120 s):
 
 | job | what | result |
 |---|---|---|
-| 55582726_0 | T-sim APR051 arm D, frozen builder | 12.3 s, proposals sha 0cf27e01... |
+| 55582726_0 | T-sim [Arab/Saudi donor] arm D, frozen builder | 12.3 s, proposals sha 0cf27e01... |
 | 55582807 / 08 / 09 | same, PYTHONHASHSEED 0 / 1 / 777 | 7.9 / 6.7 / 7.2 s, same sha |
 | 55582810 | same, pinned to cn605-04-l (node of the hung task) | 18.0 s, same sha |
-| 55582811 | T-sim APR051 arm C (control) | 6.7 s; proposals sha 730ab960... = frozen C3 proposals.json |
+| 55582811 | T-sim [Arab/Saudi donor] arm C (control) | 6.7 s; proposals sha 730ab960... = frozen C3 proposals.json |
 | 55582726_1 | D-real HG00438 arm D | 11.7 s |
 
 Every builder step takes <= 1 s apart from mapping (~6 s) and loading (~2-3 s). The hung task (55562791_48, job

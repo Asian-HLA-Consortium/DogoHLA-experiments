@@ -44,7 +44,7 @@ Reading, in plain terms:
 | step | job | outcome |
 |---|---|---|
 | inventory, draws, truth-only supply (steps 1, 2) | 55582812 (first), 55583020 (superseded), 55583109 (final) | COMPLETED; see "Deviations" for the component fix |
-| pilot: 6 donors (2 per group chosen by sha256 of donor id, ME: APR015, KSA007; EAS: NA18971, HG00544; SAS: HG03831, NA21144), 12 runs each = 72 T1K runs | 55583251 (array 0-5%6; a first launch 55583088 was cancelled by me, see deviations) | 72/72 COMPLETE, 0 FAILURE |
+| pilot: 6 donors (2 per group chosen by sha256 of donor id, ME: [Arab/Saudi donor], [Arab/Saudi donor]; EAS: NA18971, HG00544; SAS: HG03831, NA21144), 12 runs each = 72 T1K runs | 55583251 (array 0-5%6; a first launch 55583088 was cancelled by me, see deviations) | 72/72 COMPLETE, 0 FAILURE |
 | pilot sanity and timing | 55587138 | see below |
 | pilot scoring (code check) | 55587139 | 1152 rows |
 | full run: 147 donors, 10 cells each = 1470 T1K runs (60 of them already done in the pilot and reused as is) | 55587218 (array 0-146%12) | 147/147 tasks COMPLETED; 1482 COMPLETE.json (72 pilot + 1410 new), 0 FAILURE.json |
@@ -76,7 +76,7 @@ Pilot, 72 runs: mean 431 s per T1K run on 4 CPUs (range about 370 to 533 s; pane
 
 ## Deviations, problems, what was not verified
 
-1. Component bug, caught before any result was used. My first component map let one FOLDS group overwrite another for donors listed in two overlapping groups (APR-F/APR-M/APR-S). I cancelled my own pilot array 55583088 (about 1 minute in), deleted its work folders, replaced the map by the frozen union-find exclusion map, reran the inventory (55583109) and relaunched the pilot (55583251). Nothing from the cancelled run was kept.
+1. Component bug, caught before any result was used. My first component map let one FOLDS group overwrite another for donors listed in two overlapping groups ([Arab/Saudi donor]/[Arab/Saudi donor]/[Arab/Saudi donor]). I cancelled my own pilot array 55583088 (about 1 minute in), deleted its work folders, replaced the map by the frozen union-find exclusion map, reran the inventory (55583109) and relaunched the pilot (55583251). Nothing from the cancelled run was kept.
 2. SAS source has 36 donors: all SAS-sourced n=40 panels have 36 donors (35 for SAS test donors, whose own component is excluded). 147 cells are short of n requested (all SAS n=40 cells); recorded per cell in `cells.tsv`.
 3. n_drawn exceeds n by up to a few donors because whole components are drawn.
 4. One random draw per cell, so panel-to-panel variability is not separated from the donor sampling; the bootstrap resamples families, not draws. Non-monotonic steps (SAS n=5 above n=10) are consistent with that.

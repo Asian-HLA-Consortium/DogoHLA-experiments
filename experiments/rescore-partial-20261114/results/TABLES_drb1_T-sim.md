@@ -143,7 +143,7 @@ Per-copy disagreements (frozen four-field correct vs gene-body identical on IPD-
 - ('D4', 'absent'): 1
 - ('D4', 'gb_identical_other_4field_name_or_ends'): 1
 
-First disagreements (arm, donor, gene, copy, kind, frozen, mine, n_tied): ('B', 'APR007', 'DRB1', 2, 'gb_identical_other_4field_name_or_ends', 0, 1, 1); ('D4', 'APR038', 'DRB1', 2, 'absent', 1, 0, 1); ('D4', 'APR007', 'DRB1', 2, 'gb_identical_other_4field_name_or_ends', 0, 1, 1)
+First disagreements (arm, donor, gene, copy, kind, frozen, mine, n_tied): ('B', '[Arab/Saudi donor]', 'DRB1', 2, 'gb_identical_other_4field_name_or_ends', 0, 1, 1); ('D4', '[Arab/Saudi donor]', 'DRB1', 2, 'absent', 1, 0, 1); ('D4', '[Arab/Saudi donor]', 'DRB1', 2, 'gb_identical_other_4field_name_or_ends', 0, 1, 1)
 
 Gene-body recovery on IPD-absent DRB1 copies (frozen "gene body exact" column vs mine):
 

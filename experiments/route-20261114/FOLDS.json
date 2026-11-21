@@ -4,16 +4,6 @@
     {
       "fold": 0,
       "test": [
-        "APR-F",
-        "APR-M",
-        "APR-S",
-        "APR004",
-        "APR006",
-        "APR018",
-        "APR024",
-        "APR034",
-        "APR042",
-        "APR045",
         "HG00621",
         "HG00673",
         "HG00706",
@@ -35,48 +25,6 @@
         "NA20870"
       ],
       "train": [
-        "APR001",
-        "APR002",
-        "APR003",
-        "APR005",
-        "APR007",
-        "APR008",
-        "APR009",
-        "APR010",
-        "APR011",
-        "APR012",
-        "APR013",
-        "APR014",
-        "APR015",
-        "APR016",
-        "APR019",
-        "APR020",
-        "APR021",
-        "APR022",
-        "APR023",
-        "APR025",
-        "APR026",
-        "APR027",
-        "APR029",
-        "APR030",
-        "APR031",
-        "APR032",
-        "APR033",
-        "APR035",
-        "APR036",
-        "APR037",
-        "APR038",
-        "APR039",
-        "APR040",
-        "APR041",
-        "APR043",
-        "APR044",
-        "APR046",
-        "APR047",
-        "APR048",
-        "APR049",
-        "APR050",
-        "APR051",
         "HG00408",
         "HG00423",
         "HG00438",
@@ -121,15 +69,6 @@
         "HG04199",
         "HG04204",
         "HG04228",
-        "KSA001",
-        "KSA002",
-        "KSA003",
-        "KSA004",
-        "KSA005",
-        "KSA006",
-        "KSA007",
-        "KSA008",
-        "KSA009",
         "NA18570",
         "NA18608",
         "NA18620",
@@ -158,17 +97,6 @@
     {
       "fold": 1,
       "test": [
-        "APR001",
-        "APR010",
-        "APR011",
-        "APR012",
-        "APR013",
-        "APR014",
-        "APR023",
-        "APR025",
-        "APR032",
-        "APR036",
-        "APR050",
         "HG00438",
         "HG00597",
         "HG02015",
@@ -188,47 +116,6 @@
         "NA20905"
       ],
       "train": [
-        "APR-F",
-        "APR-M",
-        "APR-S",
-        "APR002",
-        "APR003",
-        "APR004",
-        "APR005",
-        "APR006",
-        "APR007",
-        "APR008",
-        "APR009",
-        "APR015",
-        "APR016",
-        "APR018",
-        "APR019",
-        "APR020",
-        "APR021",
-        "APR022",
-        "APR024",
-        "APR026",
-        "APR027",
-        "APR029",
-        "APR030",
-        "APR031",
-        "APR033",
-        "APR034",
-        "APR035",
-        "APR037",
-        "APR038",
-        "APR039",
-        "APR040",
-        "APR041",
-        "APR042",
-        "APR043",
-        "APR044",
-        "APR045",
-        "APR046",
-        "APR047",
-        "APR048",
-        "APR049",
-        "APR051",
         "HG00408",
         "HG00423",
         "HG00544",
@@ -274,15 +161,6 @@
         "HG04187",
         "HG04199",
         "HG04228",
-        "KSA001",
-        "KSA002",
-        "KSA003",
-        "KSA004",
-        "KSA005",
-        "KSA006",
-        "KSA007",
-        "KSA008",
-        "KSA009",
         "NA18565",
         "NA18570",
         "NA18620",
@@ -312,16 +190,6 @@
     {
       "fold": 2,
       "test": [
-        "APR003",
-        "APR005",
-        "APR016",
-        "APR020",
-        "APR026",
-        "APR029",
-        "APR035",
-        "APR041",
-        "APR049",
-        "APR051",
         "HG00544",
         "HG00609",
         "HG02040",
@@ -332,15 +200,6 @@
         "HG03804",
         "HG03834",
         "HG04199",
-        "KSA001",
-        "KSA002",
-        "KSA003",
-        "KSA004",
-        "KSA005",
-        "KSA006",
-        "KSA007",
-        "KSA008",
-        "KSA009",
         "NA18620",
         "NA18943",
         "NA18970",
@@ -348,48 +207,6 @@
         "NA21106"
       ],
       "train": [
-        "APR-F",
-        "APR-M",
-        "APR-S",
-        "APR001",
-        "APR002",
-        "APR004",
-        "APR006",
-        "APR007",
-        "APR008",
-        "APR009",
-        "APR010",
-        "APR011",
-        "APR012",
-        "APR013",
-        "APR014",
-        "APR015",
-        "APR018",
-        "APR019",
-        "APR021",
-        "APR022",
-        "APR023",
-        "APR024",
-        "APR025",
-        "APR027",
-        "APR030",
-        "APR031",
-        "APR032",
-        "APR033",
-        "APR034",
-        "APR036",
-        "APR037",
-        "APR038",
-        "APR039",
-        "APR040",
-        "APR042",
-        "APR043",
-        "APR044",
-        "APR045",
-        "APR046",
-        "APR047",
-        "APR048",
-        "APR050",
         "HG00408",
         "HG00423",
         "HG00438",
@@ -466,16 +283,6 @@
     {
       "fold": 3,
       "test": [
-        "APR007",
-        "APR009",
-        "APR015",
-        "APR021",
-        "APR027",
-        "APR031",
-        "APR038",
-        "APR040",
-        "APR043",
-        "APR044",
         "HG00558",
         "HG00658",
         "HG02129",
@@ -496,48 +303,6 @@
         "NA21144"
       ],
       "train": [
-        "APR-F",
-        "APR-M",
-        "APR-S",
-        "APR001",
-        "APR002",
-        "APR003",
-        "APR004",
-        "APR005",
-        "APR006",
-        "APR008",
-        "APR010",
-        "APR011",
-        "APR012",
-        "APR013",
-        "APR014",
-        "APR016",
-        "APR018",
-        "APR019",
-        "APR020",
-        "APR022",
-        "APR023",
-        "APR024",
-        "APR025",
-        "APR026",
-        "APR029",
-        "APR030",
-        "APR032",
-        "APR033",
-        "APR034",
-        "APR035",
-        "APR036",
-        "APR037",
-        "APR039",
-        "APR041",
-        "APR042",
-        "APR045",
-        "APR046",
-        "APR047",
-        "APR048",
-        "APR049",
-        "APR050",
-        "APR051",
         "HG00408",
         "HG00423",
         "HG00438",
@@ -584,15 +349,6 @@
         "HG04187",
         "HG04199",
         "HG04204",
-        "KSA001",
-        "KSA002",
-        "KSA003",
-        "KSA004",
-        "KSA005",
-        "KSA006",
-        "KSA007",
-        "KSA008",
-        "KSA009",
         "NA18565",
         "NA18570",
         "NA18608",
@@ -620,17 +376,6 @@
     {
       "fold": 4,
       "test": [
-        "APR002",
-        "APR008",
-        "APR019",
-        "APR022",
-        "APR030",
-        "APR033",
-        "APR037",
-        "APR039",
-        "APR046",
-        "APR047",
-        "APR048",
         "HG00408",
         "HG00423",
         "HG02056",
@@ -650,47 +395,6 @@
         "NA21110"
       ],
       "train": [
-        "APR-F",
-        "APR-M",
-        "APR-S",
-        "APR001",
-        "APR003",
-        "APR004",
-        "APR005",
-        "APR006",
-        "APR007",
-        "APR009",
-        "APR010",
-        "APR011",
-        "APR012",
-        "APR013",
-        "APR014",
-        "APR015",
-        "APR016",
-        "APR018",
-        "APR020",
-        "APR021",
-        "APR023",
-        "APR024",
-        "APR025",
-        "APR026",
-        "APR027",
-        "APR029",
-        "APR031",
-        "APR032",
-        "APR034",
-        "APR035",
-        "APR036",
-        "APR038",
-        "APR040",
-        "APR041",
-        "APR042",
-        "APR043",
-        "APR044",
-        "APR045",
-        "APR049",
-        "APR050",
-        "APR051",
         "HG00438",
         "HG00544",
         "HG00558",
@@ -737,15 +441,6 @@
         "HG04199",
         "HG04204",
         "HG04228",
-        "KSA001",
-        "KSA002",
-        "KSA003",
-        "KSA004",
-        "KSA005",
-        "KSA006",
-        "KSA007",
-        "KSA008",
-        "KSA009",
         "NA18565",
         "NA18608",
         "NA18620",
@@ -1252,37 +947,17 @@
     [
       "NA21309"
     ],
+    [],
     [
-      "APR002",
-      "APR030"
-    ],
-    [
-      "APR-F",
-      "APR-M",
-      "APR-S",
       "APR_F",
       "APR_M",
       "APR_S"
     ],
     [
-      "APR52",
-      "APR052"
+      "APR52"
     ],
-    [
-      "KSA001",
-      "KSA002",
-      "KSA003",
-      "KSA004",
-      "KSA005",
-      "KSA006",
-      "KSA007",
-      "KSA008",
-      "KSA009"
-    ],
-    [
-      "APR-S",
-      "APR-M"
-    ]
+    [],
+    []
   ],
   "donors": {
     "HG00408": {
@@ -1628,250 +1303,6 @@
     "NA21144": {
       "population": "GIH",
       "resource": "HPRC"
-    },
-    "APR-F": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR-M": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR-S": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR001": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR002": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR003": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR004": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR005": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR006": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR007": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR008": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR009": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR010": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR011": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR012": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR013": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR014": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR015": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR016": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR018": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR019": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR020": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR021": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR022": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR023": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR024": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR025": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR026": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR027": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR029": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR030": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR031": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR032": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR033": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR034": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR035": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR036": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR037": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR038": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR039": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR040": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR041": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR042": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR043": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR044": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR045": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR046": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR047": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR048": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR049": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR050": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "APR051": {
-      "population": "Arab (APR; finer population metadata pending)",
-      "resource": "Arab"
-    },
-    "KSA001": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA002": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA003": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA004": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA005": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA006": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA007": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA008": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
-    },
-    "KSA009": {
-      "population": "Saudi Arabian",
-      "resource": "Saudi"
     }
   },
   "source_sha256": {
@@ -1892,5 +1323,6 @@
     "Primary typing target is four-field named alleles / exact gene sequence for unnamed alleles; lower-field calls do not count as four-field successes.",
     "Real reads preferred. Simulated reads are a separately labelled experiment and are not generated here."
   ],
-  "scientific_admission": false
+  "scientific_admission": false,
+  "note": "Arab/Saudi donor ids removed from the public copy."
 }

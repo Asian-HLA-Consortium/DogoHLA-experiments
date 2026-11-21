@@ -1,4 +1,4 @@
-"""Item 1: reproduce the T-sim APR051 arm-D hang with the FROZEN DRB1 builder (imported read-only from
+"""Item 1: reproduce the T-sim [Arab/Saudi donor] arm-D hang with the FROZEN DRB1 builder (imported read-only from
 the DRB1 stage), truth-free and unscored. Times each step and dumps Python stacks every 120 s.
 Output goes to this stage only (work/hang/...). No truth is read beyond what the frozen setup()
 loads for its leakage check; nothing is scored.

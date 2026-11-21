@@ -8,7 +8,7 @@ sys.path.insert(0, '/encrypted/e3008/hohndor-dogohla-20261020/mosaic-typer-20261
 import common as C, score as SC
 T = SC.Truth(['T-sim'])
 for r in T.records:
-    if r['donor'] == 'APR049' and r['gene'] == 'DRB1':
+    if r['donor'] == '[Arab/Saudi donor]' and r['gene'] == 'DRB1':
         t = R.Seq('t', r['core_sequence'].upper(), [tuple(e) for e in r['core_exons']])
         print('copy hap', r['haplotype'], 'labels', r['genomic_labels'], 'core_len', len(t.seq), 'gb_len', len(t.body), 'cod_len', len(t.cod), 'nexons', len(t.exons))
         m = T.msas['DRB1']
