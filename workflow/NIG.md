@@ -6,7 +6,7 @@ This document provides instructions for collaborator Hassan Sibroe Daanaa to exe
 
 ## 1. Environment & Prerequisites at NIG
 
-The workflow is portable and contains zero hardcoded cluster paths. It can be run either via Singularity/Apptainer or inside a local micromamba environment.
+The workflow is portable and contains no hardcoded site paths. It can be run either via Singularity/Apptainer or inside a local micromamba environment.
 
 ### Option A: Singularity / Apptainer (Recommended)
 NIG compute nodes support Singularity containers.
@@ -41,13 +41,13 @@ singularity exec $CWL_SINGULARITY_CACHE/ghcr.io_asian-hla-consortium_dogohla-wor
 ```
 This stages, each checked by sha256:
 - `resources/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa` and its `.fai`: GRCh38 reference with decoys and HLA contigs.
-- `resources/ipd/genomic.fa`: IPD-IMGT/HLA 3.65.0 genomic alleles (checked, not built: place the pinned file supplied by the consortium there first).
+- `resources/ipd/genomic.fa`: IPD-IMGT/HLA 3.65.0 genomic alleles, built from the public `hla.dat` (byte-identical to the file we used; the script checks the sha256).
 - `resources/bait/bait_kmers.txt`: MHC 31-mer bait dictionary (`sha256: 50b3b7324a5f5bca...`).
 - `resources/immuannot/Data-ipd3590-kir2130`: Immuannot reference data.
 
 Each CRAM or BAM needs its index next to it (`samtools index sample.cram` gives `sample.cram.crai`); the
-workflow stops at the start if it is missing. The builder also needs the cohort resource folder
-(`builder_inputs`) that the consortium supplies.
+workflow stops at the start if it is missing. The builder and the scorer also need a resource folder
+(`builder_inputs`); you build it yourself from your panel and your assemblies (section 6).
 
 Place your local Japanese WGS CRAMs/BAMs and phased assemblies in your project directory (e.g. `/path/to/data/`). Note that Japanese donor data must not leave NIG.
 
@@ -146,3 +146,26 @@ Leave out `panel_reference` and `panel_aliases` to run arm A only.
 ## 5. Verification & Integrity
 
 The workflow automatically validates that all vendored frozen modules match their registered SHA-256 hashes at runtime before proceeding. If any file fails verification, execution halts immediately with an integrity assertion error.
+
+---
+
+## 6. New person mode at NIG: your own genomes and your own assemblies
+
+Typing and scoring Japanese samples needs no file from us. Everything is public or yours, and your CRAMs, BAMs and
+assemblies never leave NIG. The full description with the exact commands and input files is in
+`README.md`, section 6. In short:
+
+1. Pull the image and run `scripts/fetch_resources.sh` (section 2 above). Only public files are downloaded
+   (GRCh38 from the 1000 Genomes site, IPD-IMGT/HLA 3.65.0 from GitHub, T1K and Immuannot sources are inside the image).
+2. Build the default panel once (HPRC Asian donors only; it is smaller than the panels behind our published numbers: on the 66 real Asian genomes with folds the builder with this panel rebuilt 40 of 134 IPD-absent whole genes, against 45 with the full panel and 18 with IPD only, on donors that had been looked at before; see `experiments/public-panel-20261121/REPORT.md`) (86 public HPRC Asian donors; it reads only the HLA region of each public assembly):
+   `fetch_hprc_spans.sh` then `run_panel.sh`. The compute nodes need outgoing
+   HTTPS access for this step; if they do not, run `fetch_hprc_spans.sh` on a login or transfer node and copy
+   `resources/panel/spans` to the compute storage. Or use a panel of your own (for example Japanese assemblies:
+   run `panel.cwl` on them and leave out the samples you want to type).
+3. `cohort.cwl` with your phased assemblies builds the resource folder (`out/cohort`) and the truth for scoring.
+   For typing only, `tools/build_cohort.cwl` without assemblies.
+4. `type.cwl` types the CRAM/BAM, `evaluate.cwl` scores the calls against your assemblies. Submit them as in
+   section 3 above (`toil-cwl-runner` or `cwltool`); only the input file changes (`builder_inputs: out/cohort`).
+
+Scored per gene, haplotype copy and arm (A, B, C4, C4R4n, D4, D4R4n): gene body rebuilt exactly (IPD-absent copies),
+four-field name right, new calls right or wrong. The panel must not contain the samples you type or their relatives.

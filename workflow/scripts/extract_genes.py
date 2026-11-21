@@ -62,7 +62,8 @@ def parse_gtf_genes_and_cds(gtf_path: Path):
                     'template_allele': t_match.group(1) if t_match else None,
                     'template_distance': d_match.group(1) if d_match else None,
                 }
-            elif feature == 'CDS':
+            elif feature in ('CDS', 'stop_codon'):
+                # Immuannot lists the stop codon as its own feature; the cohort records count it in the last exon
                 raw_cds[gid].append((start_s, end_s))
 
     out_records = []
@@ -80,6 +81,13 @@ def parse_gtf_genes_and_cds(gtf_path: Path):
                 rel_end = gend - c_start + 1
             intervals.append((rel_start, rel_end))
         intervals.sort()
+        merged = []
+        for iv in intervals:               # CDS and stop codon touch: one interval
+            if merged and merged[-1][1] == iv[0]:
+                merged[-1] = (merged[-1][0], iv[1])
+            else:
+                merged.append(iv)
+        intervals = merged
         gmeta['core_exons'] = intervals
         out_records.append(gmeta)
 

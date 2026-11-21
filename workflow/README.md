@@ -11,6 +11,7 @@ The DogoHLA workflow packages the complete HLA typing workflow developed for div
 - **Part 4 (`type-t1k`):** Performs linear-reference HLA typing using T1K across baseline (Arm A) and augmented (Arm B) reference panels.
 - **Part 5 (`patch-builder`):** Discovers unannotated and recombinant alleles from the T1K candidate reads, applying the frozen R4n abstain rule to prevent over-prediction (arms C4R4n and D4R4n).
 - **Part 6 (`score`):** Evaluates typing accuracy against the truth sequences of the cohort, per copy and arm (A, B, C4, C4R4n, D4, D4R4n).
+- **Part 7 (`build-cohort`):** For samples that are not in our cohort: builds, from your panel and your own phased assemblies, the resource folder (`builder_inputs`) that the frozen builder and scorer read. See section 6.
 
 Parts 3 to 6 run the frozen reference code vendored in `dogohla/frozen/`. The scripts in `scripts/` only call it. Every vendored file is checked against `dogohla/frozen/MANIFEST.sha256` at each start; a changed file stops the run.
 
@@ -33,10 +34,10 @@ Parts 3 to 6 run the frozen reference code vendored in `dogohla/frozen/`. The sc
 |---|---|
 | CRAM or BAM of the sample, **with its index** | The index must sit next to the file: `sample.cram.crai` (create with `samtools index sample.cram`), or `sample.bam.bai`. The workflow stops at the start if it is missing. |
 | GRCh38 reference FASTA **with its `.fai`** | `GRCh38_full_analysis_set_plus_decoy_hla.fa` and `GRCh38_full_analysis_set_plus_decoy_hla.fa.fai` (`samtools faidx`). `scripts/fetch_resources.sh` makes both. |
-| `genomic.fa`, `bait_kmers.txt` | IPD-IMGT/HLA 3.65.0 genomic alleles in T1K format and the 31-mer bait set; `bait_kmers.txt` is built by `scripts/fetch_resources.sh`; `genomic.fa` is supplied by the consortium. |
+| `genomic.fa`, `bait_kmers.txt` | IPD-IMGT/HLA 3.65.0 genomic alleles in T1K format and the 31-mer bait set. Both are built from public downloads by `scripts/fetch_resources.sh`. |
 | `confounded_v1/` | Confounded windows, shipped in `resources/confounded_v1`. |
-| Cohort resource folder (`builder_inputs`) | The cohort files the builder and the scorer read (`SOURCE_RECORDS.json`, `FOLDS.json`, `mosaic_classes.tsv`, `panels_atlas.py`, `INPUTS.sha256.tsv`, `msa/`). Supplied by the consortium; it is not downloaded by `fetch_resources.sh`. The donor must be one of the cohort donors in `FOLDS.json`. |
-| Panel `reference.fa` and `aliases.json` (optional) | The arm-B reference (IPD plus cohort panel) and its alias file. Without them only arm A and C4R4n run. |
+| Cohort resource folder (`builder_inputs`) | The files the builder and the scorer read (`SOURCE_RECORDS.json`, `FOLDS.json`, `mosaic_classes.tsv`, `panels_atlas.py`, `INPUTS.sha256.tsv`, `msa/`). You build it with `cohort.cwl` or `tools/build_cohort.cwl` (section 6); our own cohort's copy is protected and is not needed. |
+| Panel `reference.fa` and `aliases.json` (optional) | The arm-B reference (IPD plus panel) and its alias file. Build the default panel from public HPRC assemblies (section 6) or give your own. Without it only arm A and C4R4n run. |
 
 ---
 
@@ -60,7 +61,7 @@ singularity exec $CWL_SINGULARITY_CACHE/ghcr.io_asian-hla-consortium_dogohla-wor
 ```
 This downloads or builds, and checks the sha256 of each result:
 - `resources/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa` and its `.fai` (GRCh38 with decoys and HLA contigs; 1000 Genomes).
-- `resources/ipd/genomic.fa`: IPD-IMGT/HLA v3.65.0 genomic reference in T1K format. This file is checked, not built: place the pinned `genomic.fa` (sha256 `9202c3d3...`, supplied by the consortium) in `resources/ipd/` before running the script. The public IPD data alone gives the same alleles with shorter sequences, so it does not reproduce the pinned file.
+- `resources/ipd/genomic.fa`: IPD-IMGT/HLA v3.65.0 genomic reference in T1K format, built from the public `hla.dat` (full genomic entries from T1K's `ParseDatFile.pl --mode genome` replace the truncated T1K entries; record order from `resources/ipd/genomic_order.txt.gz`). The result is byte-identical to the file we used (sha256 `9202c3d3...`); the script stops if it is not.
 - `resources/bait/bait_kmers.txt`: precomputed 31-mer bait set (888,049 k-mers).
 - `resources/immuannot/Data-ipd3590-kir2130`: Immuannot reference data.
 
@@ -136,7 +137,7 @@ The first command takes about 5.5 hours (see below), the second about 10 minutes
 
 ---
 
-## 4. Running on a Slurm Cluster
+## 4. Running with Slurm
 
 For distributed execution across multiple samples, use `toil-cwl-runner`:
 ```bash
@@ -168,3 +169,118 @@ Measured on our test runs (8 CPUs):
 `evaluate.cwl` writes, in `out/evaluate/`:
 - `score_rows.tsv`: one row per truth copy and arm (A, B, C4, C4R4n, D4, D4R4n), all columns of the frozen scorer.
 - `score_avail.tsv`: which arm tables were found.
+
+---
+
+## 6. New person: type your own samples and score them against your own assemblies
+
+Use this when the sample is not one of ours, for example a Japanese genome at NIG. You need public downloads and this workflow only; the frozen code in `dogohla/frozen/` is not changed. Our own cohort files are protected and are not needed: the step `build-cohort` (part 7) builds, from your panel and (for scoring) your own phased assemblies, the resource folder (`builder_inputs`) that the frozen builder and scorer read.
+
+### What to download or build
+| What | How |
+|---|---|
+| Image, GRCh38, `genomic.fa`, bait k-mers, Immuannot data | Steps 0 and 1 above (`scripts/fetch_resources.sh`; all public) |
+| Panel for arm B (optional) | **Default:** the public HPRC Asian assemblies, 86 donors, 172 haplotypes (`resources/panel/hprc_asian_haplotypes.tsv`; only HPRC sequences, built on your machine, never shipped). **Or your own** panel, made with `panel.cwl` from your assemblies. Without a panel only arm A and C4R4n run. |
+| Your CRAM or BAM with its index | to be typed |
+| Your phased assemblies (optional) | one FASTA per haplotype (whole assembly or MHC span); needed only for scoring |
+
+### A. Default panel (once)
+**Read this first:** the default public panel contains HPRC Asian donors only (143 alleles that are not in IPD, built from 86 HPRC Asian donors). The panels our published results were measured with were larger: they also held alleles found only in Arab and Saudi genomes, which are not public. How well the HPRC-only panel works was measured on the 66 real Asian genomes with folds (the tested donor's family left out of the panel): the builder with the HPRC-only panel rebuilt the whole gene for 40 of 134 IPD-absent gene copies (45 with the full panel, 18 with IPD only). These donors had been looked at before, so treat the numbers as descriptive; see [experiments/public-panel-20261121/REPORT.md](../experiments/public-panel-20261121/REPORT.md). Do not quote our other numbers for the default panel. A panel from your own assemblies may serve your population better.
+
+The span of each haplotype (about 3.4 Mb) is read from the public assembly (`fetch_hprc_spans.sh`, about 4 minutes for all 172, run inside the image), then each span is annotated and its 8 genes extracted (part 1, about 5 minutes per haplotype; `run_panel.sh` runs several at the same time, as separate `cwltool` processes), then the panel is built (part 2). If your sample is one of the 86 HPRC donors, give its id as the third argument of `fetch_hprc_spans.sh`: the panel must not contain the sample you type or its relatives.
+<!-- cmd: new_panel -->
+```bash
+export RESOURCES=$PWD/resources
+singularity exec $CWL_SINGULARITY_CACHE/ghcr.io_asian-hla-consortium_dogohla-workflow:latest.sif bash scripts/fetch_hprc_spans.sh resources/panel/hprc_asian_haplotypes.tsv resources/panel ""
+bash scripts/run_panel.sh resources/panel out/panel 8
+```
+This writes `out/panel/reference.fa` and `out/panel/aliases.json` (and `panel_summary.json`). Do not use `cwltool --parallel` with Singularity: in cwltool 3.1 the processes race on the image name. For a small panel of your own assemblies, `panel.cwl` (one `cwltool` call, no `--parallel`) does the same.
+
+### B. Resource folder for the frozen builder and scorer
+`cohort_inputs.yml` (with your assemblies; leave out `assemblies`, `samples`, `haplotypes`, `immuannot_ref` and use `tools/build_cohort.cwl` instead when you only want to type):
+<!-- file: cohort_inputs.yml -->
+```yaml
+assemblies:
+  - {class: File, path: "/path/to/SAMPLE01.hap1.fa"}
+  - {class: File, path: "/path/to/SAMPLE01.hap2.fa"}
+samples: ["SAMPLE01", "SAMPLE01"]
+haplotypes: ["1", "2"]
+immuannot_ref: {class: Directory, path: "/path/to/resources/immuannot/Data-ipd3590-kir2130"}
+ipd_genomic: {class: File, path: "/path/to/resources/ipd/genomic.fa"}
+panel_reference: {class: File, path: "out/panel/reference.fa"}
+panel_aliases: {class: File, path: "out/panel/aliases.json"}
+donors: ["SAMPLE01"]
+threads: 8
+```
+`mafft_dir` (a folder with `bin/mafft`, MAFFT 7.526) is only needed if your image has no `mafft`; images built from `containers/Dockerfile` have it. An optional `families` file (`donor<TAB>family id`) marks relatives; without it every sample is its own family.
+<!-- cmd: new_cohort -->
+```bash
+cwltool --singularity --outdir out cohort.cwl cohort_inputs.yml
+```
+This writes `out/cohort/` (about 1 hour for one sample; most of it is Immuannot on the assemblies).
+
+### C. Type and score
+`new_type_inputs.yml` is the typing input of step 2 with `builder_inputs` set to `out/cohort`:
+<!-- file: new_type_inputs.yml -->
+```yaml
+donor: "SAMPLE01"
+cram:
+  class: File
+  path: "/path/to/sample.cram"
+reference_genome:
+  class: File
+  path: "/path/to/resources/ref/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+ipd_genomic:
+  class: File
+  path: "/path/to/resources/ipd/genomic.fa"
+bait_kmers:
+  class: File
+  path: "/path/to/resources/bait/bait_kmers.txt"
+panel_reference:
+  class: File
+  path: "out/panel/reference.fa"
+panel_aliases:
+  class: File
+  path: "out/panel/aliases.json"
+builder_inputs:
+  class: Directory
+  path: "out/cohort"
+confounded_dir:
+  class: Directory
+  path: "resources/confounded_v1"
+threads: 8
+```
+<!-- file: new_evaluate_inputs.yml -->
+```yaml
+donor: "SAMPLE01"
+calls_a:
+  class: File
+  path: "out/type/armA_genotype.tsv"
+calls_b:
+  class: File
+  path: "out/type/armB_genotype.tsv"
+builder_dir_c:
+  class: Directory
+  path: "out/type/builder_C4R4n"
+builder_dir_d:
+  class: Directory
+  path: "out/type/builder_D4R4n"
+panel_reference:
+  class: File
+  path: "out/panel/reference.fa"
+ipd_genomic:
+  class: File
+  path: "/path/to/resources/ipd/genomic.fa"
+builder_inputs:
+  class: Directory
+  path: "out/cohort"
+```
+<!-- cmd: new_run -->
+```bash
+cwltool --singularity --outdir out/type type.cwl new_type_inputs.yml
+cwltool --singularity --outdir out/evaluate evaluate.cwl new_evaluate_inputs.yml
+```
+Typing takes as long as in step 3. Without a panel, leave out the panel entries and `calls_b`, `builder_dir_d`, `panel_reference`.
+
+### What is scored
+For each of the 8 genes and each haplotype copy of your assemblies, `out/evaluate/score_rows.tsv` has one row per arm (A, B, C4, C4R4n, D4, D4R4n), with the same 28 columns as in our own tests: whether the gene body of an IPD-absent copy was rebuilt exactly, whether the four-field name is right, whether new calls are right or wrong, and the class of the true sequence ("exact", "mosaic", "private") against IPD alone (`class_ipd`) and against IPD plus your panel (`class_full`). The truth is taken from your own assemblies by part 1; no family table is needed (each sample is its own family). Note that `class_full` is relative to the panel you gave, so it is not comparable with the labels of our cohort.

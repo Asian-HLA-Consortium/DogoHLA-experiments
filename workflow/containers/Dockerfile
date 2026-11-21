@@ -70,6 +70,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make install && \
     ldconfig && \
     rm -rf /tmp/build-jellyfish && \
+    # 3e. MAFFT 7.526 (alignment of the panel and truth sequences in build-cohort; apt has 7.525)
+    mkdir -p /tmp/build-mafft && cd /tmp/build-mafft && \
+    wget -q https://gitlab.com/sysimm/mafft/-/archive/v7.526/mafft-v7.526.tar.gz -O mafft.tgz && \
+    tar -xzf mafft.tgz --strip-components=1 && \
+    cd core && make -j4 PREFIX=/usr/local && make install PREFIX=/usr/local && \
+    rm -rf /tmp/build-mafft && \
     # 4. T1K v1.0.6 (v1.0.6-r216)
     mkdir -p /opt/t1k && cd /opt/t1k && \
     wget -q https://github.com/mourisl/T1K/archive/refs/tags/v1.0.6.tar.gz -O t1k.tar.gz && \
